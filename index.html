@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expense Tracker Dashboard</title>
+</head>
+<body style="font-family: Arial; background-color:#f5f7fa; margin:30px;">
+  <div style="text-align:center; background: linear-gradient(to right, #0077b6, #48cae4); color:white;padding:15px; border-radius:10px;  width:75%;  margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.2);">
+    <h2 style="margin:0; font-size:26px; letter-spacing:1px; text-shadow:1px 1px 3px rgba(0,0,0,0.3);">
+       Expense Tracker Dashboard </h2>
+    <p style="margin:6px 0 0 0;">Manage your expenses smartly and efficiently</p></div>
+  <hr style="border:1px solid #0077b6; width:60%; margin:25px auto;">
+  <div style="width:75%; margin:auto; background:white; padding:25px;
+              border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1);">
+    <form id="expenseForm" style="margin-bottom:20px;">
+      <label style="font-weight:bold;">Description:</label><br>
+      <input type="text" id="desc" placeholder="e.g., Lunch at KFC"
+             style="width:95%; padding:10px; margin:6px 0 15px; border:1px solid #ccc; border-radius:5px; font-size:14px;"><br>
+      <label style="font-weight:bold;">Amount (Rs):</label><br>
+      <input type="text" id="amount" placeholder="e.g., 850"
+             style="width:95%; padding:10px; margin:6px 0 15px; border:1px solid #ccc; border-radius:5px; font-size:14px;"><br>
+      <label style="font-weight:bold;">Category:</label><br>
+      <select id="category"
+              style="width:97%; padding:10px; margin:6px 0 15px; border:1px solid #ccc; border-radius:5px; font-size:14px; background-color:white;">
+        <option value="">-- Select Category --</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Bills">Bills</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Other">Other</option>
+      </select><br>
+      <div style="text-align:center;">
+        <button type="button" onclick="addExpense()" style="background-color:#0077b6; color:white; border:none;
+                       padding:10px 25px; border-radius:6px; cursor:pointer; font-size:15px; margin-right:10px;">
+    Add Expense</button>
+        <button type="button" onclick="resetAll()" style="background-color:#d62828; color:white; border:none;
+                       padding:10px 25px; border-radius:6px; cursor:pointer; font-size:15px;">Reset All </button>
+      </div></form>
+    <div style="text-align:center; margin-bottom:20px;">
+      <label style="font-weight:bold;">Filter by Category:</label>
+      <select id="filterCategory"
+              style="width:40%; padding:8px; border:1px solid #ccc; border-radius:5px; background-color:white; font-size:14px;"
+              onchange="filterExpenses()">
+        <option value="All">All</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Bills">Bills</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <table id="expenseTable" style="width:100%; border-collapse:collapse; text-align:center;">
+      <thead>
+        <tr style="background-color:#caf0f8; color:#03045e;">
+          <th style="padding:10px; border-bottom:2px solid #ccc;">Description</th>
+          <th style="padding:10px; border-bottom:2px solid #ccc;">Amount</th>
+          <th style="padding:10px; border-bottom:2px solid #ccc;">Category</th>
+          <th style="padding:10px; border-bottom:2px solid #ccc;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table> 
+    <p id="total"style="text-align:right; font-weight:bold; color:#023e8a; margin-top:20px; font-size:16px;">
+  Total Expense: Rs. 0</p></div>
+  <script>
+    // Expense constructor
+    function Expense(description, amount, category) {
+      this.description = description;
+      this.amount = amount;
+      this.category = category;
+    }
+    var expenses = [];
+    // Add expense with validation
+    function addExpense() {
+      try {
+        var desc = document.getElementById("desc").value.trim();
+        var amount = document.getElementById("amount").value.trim();
+        var category = document.getElementById("category").value;
+        // Reset borders
+        document.getElementById("desc").style.border = "1px solid #ccc";
+        document.getElementById("amount").style.border = "1px solid #ccc";
+        document.getElementById("category").style.border = "1px solid #ccc";
+        // Input validation
+        if (desc === "") throw "Description cannot be empty!";
+        if (amount === "" || isNaN(amount) || Number(amount) <= 0)
+          throw "Amount must be a positive number!";
+        if (category === "") throw "Please select a category!";
+        // Create object & push to array
+        var expense = new Expense(desc, parseFloat(amount), category);
+        expenses.push(expense);
+        displayExpenses();
+        clearForm();} 
+      catch (err) {
+        alert( "" + err);
+        // Highlight invalid fields
+        if (desc === "") document.getElementById("desc").style.border = "2px solid red";
+        if (amount === "" || isNaN(amount) || Number(amount) <= 0)
+          document.getElementById("amount").style.border = "2px solid red";
+        if (category === "") document.getElementById("category").style.border = "2px solid red";
+      }
+    }
+    // Display expenses in table
+    function displayExpenses() {
+      var tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+      var total = 0;
+      for (var i = 0; i < expenses.length; i++) {
+        var row = document.createElement("tr");
+        row.style.backgroundColor = i % 2 === 0 ? "#f9f9f9" : "#f1f1f1";
+        row.innerHTML =
+          "<td style='padding:8px; border-bottom:1px solid #ddd;'>" + expenses[i].description + "</td>" +
+          "<td style='padding:8px; border-bottom:1px solid #ddd;'>Rs. " + expenses[i].amount.toFixed(2) + "</td>" +
+          "<td style='padding:8px; border-bottom:1px solid #ddd;'>" + expenses[i].category + "</td>" +
+          "<td style='padding:8px; border-bottom:1px solid #ddd;'>" +
+          "<button onclick='deleteExpense(" + i + ")' style='background-color:#e63946; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;'>🗑 Delete</button></td>";
+        tbody.appendChild(row);
+        total += expenses[i].amount;
+          }
+      document.getElementById("total").innerText = "Total Expense: Rs. " + total.toFixed(2);
+    }
+    // Delete specific expense
+    function deleteExpense(index) {
+      expenses.splice(index, 1);
+      displayExpenses();
+    }
+    // Clear form fields
+    function clearForm() {
+      document.getElementById("desc").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("category").value = "";
+    }
+    // Reset all expenses
+    function resetAll() {
+      if (confirm("Are you sure you want to clear all expenses?")) {
+        expenses = [];
+        document.getElementById("tableBody").innerHTML = "";
+        document.getElementById("total").innerText = "Total Expense: Rs. 0";
+        clearForm(); }
+    }
+    // Filter by category
+    function filterExpenses() {
+      var filter = document.getElementById("filterCategory").value;
+      var tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+      var total = 0;
+      for (var i = 0; i < expenses.length; i++) {
+        if (filter === "All" || expenses[i].category === filter) {
+          var row = document.createElement("tr");
+          row.style.backgroundColor = i % 2 === 0 ? "#f9f9f9" : "#f1f1f1";
+          row.innerHTML =
+            "<td style='padding:8px; border-bottom:1px solid #ddd;'>" + expenses[i].description + "</td>" +
+            "<td style='padding:8px; border-bottom:1px solid #ddd;'>Rs. " + expenses[i].amount.toFixed(2) + "</td>" +
+            "<td style='padding:8px; border-bottom:1px solid #ddd;'>" + expenses[i].category + "</td>" +
+            "<td style='padding:8px; border-bottom:1px solid #ddd;'>" +
+            "<button onclick='deleteExpense(" + i + ")' style='background-color:#e63946; color:white; border:none; padding:5px 12px; border-radius:5px; cursor:pointer;'>🗑 Delete</button></td>";
+          tbody.appendChild(row);
+          total += expenses[i].amount;
+        }
+      }
+      document.getElementById("total").innerText = "Total Expense: Rs. " + total.toFixed(2);
+    }
+  </script>
+</body>
+</html>
